@@ -261,6 +261,12 @@ namespace PokemonGo.RocketAPI.Console
                         case 28:
                             //langSelected = line;
                             break;
+                        case 29:
+                            checkBox16.Checked = bool.Parse(line);
+                            break;
+                        case 30:
+                            textBox26.Text = line;
+                            break;
                         default:
                             TextBox temp = (TextBox)Controls.Find("textBox" + tb, true).FirstOrDefault();
                             temp.Text = line;
@@ -634,12 +640,22 @@ namespace PokemonGo.RocketAPI.Console
                 Globals.ivmaxpercent = int.Parse(textBox24.Text);
             }
 
+            if (textBox26.Text == string.Empty)
+            {
+                textBox26.BackColor = Color.Red;
+            } else {
+                int x = int.Parse(textBox26.Text);
+                decimal c = ((decimal)x / 100);
+                Globals.razzberry_chance = Convert.ToDouble(c);
+            }
+
             Globals.gerNames = checkBox8.Checked;
             Globals.useincense = checkBox9.Checked;
             Globals.pokeList = checkBox10.Checked;
             Globals.keepPokemonsThatCanEvolve = checkBox11.Checked;
             //Globals.pokevision = checkBox12.Checked;
             Globals.useLuckyEggIfNotRunning = checkBox12.Checked;
+            Globals.userazzberry = checkBox16.Checked;
             Globals.TransferFirstLowIV = checkBox15.Checked;
             Globals.settingsLanguage = langSelected;
 
@@ -664,7 +680,7 @@ namespace PokemonGo.RocketAPI.Console
                 else
                     Globals.doEvolve.Add((PokemonId)Enum.Parse(typeof(PokemonId), pokemon));
             }
-
+            
             string[] accFile = {
                     Globals.acc.ToString(),
                     Globals.username,
@@ -693,7 +709,9 @@ namespace PokemonGo.RocketAPI.Console
                     Globals.autoIncubate.ToString(),
                     Globals.useBasicIncubators.ToString(),
                     Globals.TransferFirstLowIV.ToString(),
-                    Globals.settingsLanguage
+                    Globals.settingsLanguage,
+                    Globals.userazzberry.ToString(),
+                    Convert.ToInt16(Globals.razzberry_chance * 100).ToString()
             };
             File.WriteAllLines(@Program.account, accFile);
 
@@ -789,6 +807,11 @@ namespace PokemonGo.RocketAPI.Console
         private void checkBox7_CheckedChanged(object sender, EventArgs e)
         {
             Globals.useluckyegg = checkBox7.Checked;
+        }
+
+        private void checkBox16_CheckedChanged(object sender, EventArgs e)
+        {
+            Globals.userazzberry = checkBox16.Checked;
         }
 
         private void checkBox8_CheckedChanged(object sender, EventArgs e)
@@ -979,6 +1002,7 @@ namespace PokemonGo.RocketAPI.Console
             button1.Text = TranslationHandler.GetString("saveConfig", "Save Configuration / Start Bot");
             groupBox10.Text = TranslationHandler.GetString("otherSettings", "Other Settings");
             checkBox7.Text = TranslationHandler.GetString("useLuckyeggAtEvolve", "Use LuckyEgg at Evolve");
+            checkBox16.Text = TranslationHandler.GetString("useRazzBerry", "Use RazzBerry");
             checkBox8.Text = TranslationHandler.GetString("germanPokemonNames", "German Pokemon names");
             checkBox9.Text = TranslationHandler.GetString("useIncese", "Use Incense every 30min");
             checkBox3.Text = TranslationHandler.GetString("evolvePokemonIfEnoughCandy", "Evolve Pokemons if enough candy");
@@ -1006,10 +1030,17 @@ namespace PokemonGo.RocketAPI.Console
             if (clicked != null)
             {
                 // I have used the tag field of the button to save the language key
-                langSelected = (string)clicked.Tag;
+                langSelected = (string)clicked.Tag; 
                 if (!string.IsNullOrWhiteSpace(langSelected))
                 {
-                    TranslationHandler.SelectLangauge(langSelected);
+                    if (langSelected == "en")
+                    {
+                        TranslationHandler.SelectLangauge(null);
+                    }
+                    else
+                    {
+                        TranslationHandler.SelectLangauge(langSelected);
+                    }
                     load_lang();
                 }
                 else
