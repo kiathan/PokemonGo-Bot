@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 
 namespace PokemonGo.RocketAPI.Console
-{
+{ 
     public class Settings : ISettings
     {
         public bool UseLastCords => true; // Only disable this if your sure what you're doing!
@@ -31,6 +31,7 @@ namespace PokemonGo.RocketAPI.Console
         public int HoldMaxDoublePokemons => Globals.duplicate;
         public int TelegramLiveStatsDelay => Globals.telDelay;
 
+        public bool sleepatpokemons => Globals.sleepatpokemons;
 
         public double WalkingSpeedInKilometerPerHour => Globals.speed;
 

@@ -13,6 +13,7 @@ using System.Windows.Forms;
 
 using PokemonGo.RocketAPI.Logic.Translation;
 using POGOProtos.Enums;
+using System.Threading;
 
 namespace PokemonGo.RocketAPI.Console
 {
@@ -73,47 +74,48 @@ namespace PokemonGo.RocketAPI.Console
 
         public static ISettings _clientSettings;
 
+        static string devicePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Device");
+        static string deviceinfo = Path.Combine(devicePath, "DeviceInfo.txt");
+
         private void GUI_Load(object sender, EventArgs e)
         {
             _clientSettings = new Settings();
             // Create missing Files
             Directory.CreateDirectory(Program.path);
             Directory.CreateDirectory(Program.path_translation);
+            Directory.CreateDirectory(devicePath);
 
-            try
+            if (!File.Exists(deviceinfo))
             {
-                Extract("PokemonGo.RocketAPI.Console", AppDomain.CurrentDomain.BaseDirectory, "Resources", "encrypt.dll"); // unpack our encrypt dll
-            } catch (Exception)
+                var f = File.Create(deviceinfo);
+                f.Close();
+                File.WriteAllLines(deviceinfo, new string[] { "galaxy6", " " });
+            } else
             {
-
-            }
-
-            // Load Languages Files always UP2Date
-            try
-            {
-                ExtendedWebClient client = new ExtendedWebClient();
-                string translations = client.DownloadString("http://pokemon-go.ar1i.xyz/lang/get.php");
-                string[] transArray = translations.Replace("\r", string.Empty).Split('\n');
-                for (int ijik = 0; ijik < transArray.Count(); ijik++)
+                // Try to read the device name
+                string[] arrLine = File.ReadAllLines(deviceinfo);
+                try
                 {
-                    client.DownloadFile("http://pokemon-go.ar1i.xyz/lang/" + transArray[ijik], Program.path_translation + "\\" + transArray[ijik]);
+                    if (arrLine[0] != null)
+                    {
+                        comboBox2.Text = arrLine[0];
+                    }
+                } catch (Exception) { 
                 }
-            }
-            catch (Exception)
-            {
-                List<string> b = new List<string>();
-                b.Add("de.json");
-                b.Add("france.json");
-                b.Add("italian.json");
-                b.Add("ptBR.json");
-                b.Add("ru.json");
-                b.Add("spain.json");
-                b.Add("tr.json");
+            } 
 
-                foreach (var l in b)
-                {
-                    Extract("PokemonGo.RocketAPI.Console", Program.path_translation, "Lang", l);
-                }
+            List<string> b = new List<string>();
+            b.Add("de.json");
+            b.Add("france.json");
+            b.Add("italian.json");
+            b.Add("ptBR.json");
+            b.Add("ru.json");
+            b.Add("spain.json");
+            b.Add("tr.json");
+
+            foreach (var l in b)
+            {
+                Extract("PokemonGo.RocketAPI.Console", Program.path_translation, "Lang", l); 
             }
 
             TranslationHandler.Init();
@@ -266,6 +268,9 @@ namespace PokemonGo.RocketAPI.Console
                             break;
                         case 30:
                             textBox26.Text = line;
+                            break;
+                        case 31:
+                            checkBox17.Checked = bool.Parse(line);
                             break;
                         default:
                             TextBox temp = (TextBox)Controls.Find("textBox" + tb, true).FirstOrDefault();
@@ -658,6 +663,7 @@ namespace PokemonGo.RocketAPI.Console
             Globals.userazzberry = checkBox16.Checked;
             Globals.TransferFirstLowIV = checkBox15.Checked;
             Globals.settingsLanguage = langSelected;
+            Globals.sleepatpokemons = checkBox17.Checked;
 
             foreach (string pokemon in checkedListBox1.CheckedItems)
             {
@@ -711,7 +717,8 @@ namespace PokemonGo.RocketAPI.Console
                     Globals.TransferFirstLowIV.ToString(),
                     Globals.settingsLanguage,
                     Globals.userazzberry.ToString(),
-                    Convert.ToInt16(Globals.razzberry_chance * 100).ToString()
+                    Convert.ToInt16(Globals.razzberry_chance * 100).ToString(),
+                    Globals.sleepatpokemons.ToString()
             };
             File.WriteAllLines(@Program.account, accFile);
 
@@ -1241,6 +1248,23 @@ namespace PokemonGo.RocketAPI.Console
         private void linkLabel5_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             Process.Start("http://proxylist.hidemyass.com/search-1297445#listable");
+        }
+
+        private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            try {
+                string[] arrLine = File.ReadAllLines(deviceinfo);
+                arrLine[0] = comboBox2.SelectedItem.ToString();
+                File.WriteAllLines(deviceinfo, arrLine);
+            } catch (IndexOutOfRangeException)
+            {
+                File.WriteAllLines(deviceinfo, new string[] { comboBox2.SelectedItem.ToString(), " " });
+            }
+        }
+
+        private void checkBox17_CheckedChanged(object sender, EventArgs e)
+        {
+            Globals.sleepatpokemons = checkBox17.Checked;
         }
     }
 }
